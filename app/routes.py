@@ -171,18 +171,21 @@ def update_user(id):
 ###################################################33333
 
 
-
 @routes_bp.route('/delete/<int:id>', methods=['DELETE'])
 def delete_user(id):
     try:
         connection = get_db_connection()
-        cur = connection.cursor()
+        cur = connection.cursor(dictionary=True)
 
-        # Verificar si el usuario existe antes de eliminar
         cur.execute("SELECT * FROM users WHERE id = %s", (id,))
         user = cur.fetchone()
         if not user:
             return jsonify({"error": "Usuario no encontrado"}), 404
+
+        if user['image'] and os.path.exists(user['image']):
+            os.remove(user['image'])
+        else:
+            pass 
 
         cur.execute("DELETE FROM users WHERE id = %s", (id,))
         connection.commit()
@@ -190,8 +193,8 @@ def delete_user(id):
         connection.close()
 
         return jsonify({"message": "Usuario eliminado exitosamente"}), 200
-    except mysql.connector.Error as e:
-        return jsonify({"error": f"Error al conectar con la base de datos: {str(e)}"}), 500
-    
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
 
 
