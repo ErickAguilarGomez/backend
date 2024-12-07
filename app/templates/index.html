@@ -107,6 +107,16 @@
                 />
               </div>
               <div class="mb-3">
+                <label for="nombre" class="form-label">Apellido</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="apellido"
+                  name="apellido"
+                  required
+                />
+              </div>
+              <div class="mb-3">
                 <label for="correo" class="form-label">Correo</label>
                 <input
                   type="email"
@@ -176,6 +186,16 @@
                 />
               </div>
               <div class="mb-3">
+                <label for="editNombre" class="form-label">Apellido</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editApellido"
+                  name="apellido"
+                  required
+                />
+              </div>
+              <div class="mb-3">
                 <label for="editCorreo" class="form-label" aria-disabled="true"
                   >Correo</label
                 >
@@ -184,7 +204,7 @@
                   class="form-control"
                   id="editCorreo"
                   name="correo"
-                  required
+                  disabled
                 />
               </div>
               <div class="mb-3">
@@ -197,12 +217,13 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="editImage" class="form-label">Imagen</label>
+                <label for="image" class="form-label">Imagen</label>
                 <input
-                  type="text"
+                  type="file"
                   class="form-control"
                   id="editImage"
-                  name="image"
+                  name="editImage"
+                  accept="image/*"
                 />
               </div>
               <button type="submit" class="btn btn-warning" id="updatemodal">
@@ -250,77 +271,97 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 
     <script>
-      const editUserModal = document.getElementById("editUserModal");
-      const userData = {}; // Objeto para guardar los datos del usuario
+const editUserModal = document.getElementById("editUserModal");
+const userData = {}; // Objeto para guardar los datos del usuario
 
-      // Cuando el modal de edición se muestra
-      editUserModal.addEventListener("show.bs.modal", function (event) {
-        const button = event.relatedTarget; // Botón que activó el modal
-        const userId = button.getAttribute("data-id");
-        const userName = button.getAttribute("data-nombre");
-        const userEmail = button.getAttribute("data-correo");
-        const userCelular = button.getAttribute("data-celular");
-        const userImage = button.getAttribute("data-image");
+// Cuando el modal de edición se muestra
+editUserModal.addEventListener("show.bs.modal", function (event) {
+  const button = event.relatedTarget; // Botón que activó el modal
+  const userId = button.getAttribute("data-id");
+  const userName = button.getAttribute("data-nombre");
+  const userApellido = button.getAttribute("data-apellido"); // Atributo para el apellido
+  const userEmail = button.getAttribute("data-correo");
+  const userCelular = button.getAttribute("data-celular");
+  const userImage = button.getAttribute("data-image");
 
-        // Asignar los valores a los campos del formulario en el modal
-        const modalBody = editUserModal.querySelector(".modal-body");
-        const editNombre = modalBody.querySelector("#editNombre");
-        const editCorreo = modalBody.querySelector("#editCorreo");
-        const editCelular = modalBody.querySelector("#editCelular");
-        const editImage = modalBody.querySelector("#editImage");
+  // Asignar los valores a los campos del formulario en el modal
+  const modalBody = editUserModal.querySelector(".modal-body");
+  const editNombre = modalBody.querySelector("#editNombre");
+  const editApellido = modalBody.querySelector("#editApellido");
+  const editCorreo = modalBody.querySelector("#editCorreo");
+  const editCelular = modalBody.querySelector("#editCelular");
+  const editImage = modalBody.querySelector("#editImage");
 
-        editNombre.value = userName;
-        editCorreo.value = userEmail;
-        editCelular.value = userCelular;
-        editImage.value = userImage;
+  editNombre.value = userName;
+  editApellido.value = userApellido; // Asignar correctamente el apellido
+  editCorreo.value = userEmail;
+  editCelular.value = userCelular;
 
-        // Guardar los datos iniciales
-        userData.id = Number(userId);
-        userData.nombre = userName;
-        userData.apellido = userName;
-        userData.celular = userCelular;
-        userData.image = userImage;
+  // Guardar los datos iniciales
+  userData.id = Number(userId);
+  userData.nombre = userName;
+  userData.apellido = userApellido; // Guardar apellido
+  userData.correo = userEmail;
+  userData.celular = userCelular;
 
-        // Trackear los cambios en los inputs
-        editNombre.addEventListener("input", function () {
-          userData.nombre = editNombre.value;
-        });
-        editCorreo.addEventListener("input", function () {
-          userData.correo = editCorreo.value;
-        });
-        editCelular.addEventListener("input", function () {
-          userData.celular = editCelular.value;
-        });
-        editImage.addEventListener("input", function () {
-          userData.image = editImage.value;
-        });
+  // Trackear los cambios en los inputs
+  editNombre.addEventListener("input", () => {
+    userData.nombre = editNombre.value;
+  });
+  editApellido.addEventListener("input", () => {
+    userData.apellido = editApellido.value; // Trackear cambios en apellido
+  });
+  editCorreo.addEventListener("input", () => {
+    userData.correo = editCorreo.value;
+  });
+  editCelular.addEventListener("input", () => {
+    userData.celular = editCelular.value;
+  });
 
-        const updateButton = modalBody.querySelector("#updatemodal");
-        updateButton.addEventListener("click", handleUpdateUser);
+  // Procesar la imagen
+  editImage.addEventListener("change", function () {
+    const imageFile = editImage.files[0];
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        userData.image = reader.result; // Convertir imagen a Base64
+        userData.imageName = imageFile.name; // Guardar el nombre de la imagen
+      };
+      reader.readAsDataURL(imageFile); // Leer el archivo y convertirlo
+    } else {
+      userData.image = ""; // Si no hay archivo, enviar vacío
+      userData.imageName = "";
+    }
+  });
 
-        function handleUpdateUser(e) {
-          e.preventDefault();
-          fetch(`/update/${userData.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(userData),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              alert("Usuario actualizado con éxito");
-              window.location.reload(); 
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("Hubo un error al actualizar el usuario");
-            });
-        }
+  // Botón de actualización
+  const updateButton = modalBody.querySelector("#updatemodal");
+  updateButton.addEventListener("click", handleUpdateUser);
+
+  function handleUpdateUser(e) {
+    e.preventDefault();
+    fetch(`/update/${userData.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        alert("Usuario actualizado con éxito");
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Hubo un error al actualizar el usuario");
       });
+  }
+});
+
 
       const deleteUserModal = document.getElementById("deleteUserModal");
-      deleteUserModal.addEventListener("show.bs.modal", (e)=>{
+      deleteUserModal.addEventListener("show.bs.modal", (e) => {
         const button = e.relatedTarget;
         const userId = button.getAttribute("data-id");
         deleteUserModal.querySelector("form").addEventListener("click", (e) => {
@@ -342,39 +383,65 @@
         });
       });
 
-      const createUserForm=document.getElementById("createUserForm")
-      createUserForm.addEventListener("submit",  (e)=> {
-          event.preventDefault(); 
+      const createUserForm = document.getElementById("createUserForm");
+      createUserForm.addEventListener("submit", function (e) {
+        e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
 
-          const nombre = document.getElementById("nombre").value;
-          const correo = document.getElementById("correo").value;
-          const celular = document.getElementById("celular").value;
-          const image = document.getElementById("image").value;
+        const nombre = document.getElementById("nombre").value;
+        const apellido = document.getElementById("apellido").value;
+        const correo = document.getElementById("correo").value;
+        const celular = document.getElementById("celular").value;
+        const imageFile = document.getElementById("image").files[0]; // Obtener el archivo de imagen
 
+        // Si hay una imagen, convertirla a Base64
+        let imageBase64 = "";
+        let imageName = "";
+        if (imageFile) {
+          const reader = new FileReader();
+          reader.onloadend = function () {
+            imageBase64 = reader.result
+            imageName = imageFile.name; // Puedes usar el nombre del archivo o generarlo dinámicamente
+            console.log(reader.result)
+            sendDataToServer();
+          };
+          reader.readAsDataURL(imageFile); // Convierte la imagen a Base64
+        } else {
+          sendDataToServer(); // Si no hay imagen, enviar sin ella
+        }
+
+        // Función que envía los datos al servidor
+        function sendDataToServer() {
           const userData = {
             nombre: nombre,
+            apellido: apellido,
             correo: correo,
             celular: celular,
-            image: image,
+            image: imageBase64, // Enviar la imagen en Base64
+            image_name: imageName, // Enviar el nombre de la imagen
           };
 
           fetch("/register", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": "application/json", // Especificamos que enviamos JSON
             },
-            body: JSON.stringify(userData),
+            body: JSON.stringify(userData), // Enviar los datos como JSON
           })
             .then((response) => response.json())
             .then((data) => {
-              alert("Usuario creado con éxito");
-              window.location.reload();
+              if (data.message) {
+                alert("Usuario creado con éxito");
+                window.location.reload(); // Recargar la página para ver los cambios
+              } else {
+                alert("Error: " + data.error);
+              }
             })
             .catch((error) => {
               console.error("Error:", error);
               alert("Hubo un error al crear el usuario");
             });
-        });
+        }
+      });
     </script>
   </body>
 </html>

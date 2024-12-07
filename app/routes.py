@@ -3,8 +3,6 @@ from flask import Blueprint, jsonify,render_template, request
 from .database import get_db_connection
 import mysql.connector
 import base64
-from io import BytesIO
-from PIL import Image
 
 routes_bp = Blueprint('routes_bp', __name__)
 
