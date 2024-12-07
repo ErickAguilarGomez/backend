@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from .routes import routes_bp
 def create_app():
@@ -6,6 +7,7 @@ def create_app():
     app.config['MYSQL_USER'] = 'root'            
     app.config['MYSQL_PASSWORD'] = 'mi_contraseña'  
     app.config['MYSQL_DATABASE'] = 'clientes'
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
     
     app.register_blueprint(routes_bp)
     
