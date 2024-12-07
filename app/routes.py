@@ -98,6 +98,11 @@ def post_user():
     except mysql.connector.Error as e:
         return jsonify({"error": f"Error al conectar con la base de datos: {str(e)}"}), 500
 
+###################################################33333
+###################################################33333
+###################################################33333
+###################################################33333
+###################################################33333
 
 @routes_bp.route('/update/<int:id>', methods=['PUT'])
 def update_user(id):
@@ -115,38 +120,37 @@ def update_user(id):
             return jsonify({"error": "Faltan datos (nombre y correo son obligatorios)"}), 400
 
         connection = get_db_connection()
-        cur = connection.cursor()
+        cur = connection.cursor(dictionary=True)
 
-        # Verificar si el usuario existe
         cur.execute("SELECT * FROM users WHERE id = %s", (id,))
         user = cur.fetchone()
 
         if not user:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
-        # Si se proporciona una nueva imagen, procesarla
         if image:
             try:
-                # Eliminar la imagen anterior si existe
                 if user['image']:
                     try:
-                        os.remove(user['image'])  # Eliminar la imagen antigua
+                        os.remove(user['image'])
                     except OSError:
-                        pass  # Si no se puede eliminar, lo ignoramos
+                        pass
 
-                # Decodificar la nueva imagen
                 image_data = base64.b64decode(image.split(',')[1])
+                
+                if not image_name:
+                    image_name = f"profile_image_{id}.jpg"
+
                 image_path = os.path.join(os.getcwd(), 'uploads', image_name)
 
                 with open(image_path, 'wb') as f:
                     f.write(image_data)
                 image = image_path
             except Exception as e:
-                return jsonify({"error": "Formato de imagen base64 inválido"}), 400
+                return jsonify({"error":f"{e}"}), 400
         else:
-            image = user['image']  # Mantener la imagen existente si no se proporciona una nueva
+            image = user['image']
 
-        # Actualizar los campos del usuario
         cur.execute("""
             UPDATE users
             SET nombre = %s, apellido = %s, correo = %s, celular = %s, image = %s
@@ -161,6 +165,12 @@ def update_user(id):
 
     except mysql.connector.Error as e:
         return jsonify({"error": f"Error al conectar con la base de datos: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
+###################################################33333
+###################################################33333
+###################################################33333
+###################################################33333
 
 
 
