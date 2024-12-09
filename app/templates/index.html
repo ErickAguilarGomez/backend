@@ -43,10 +43,18 @@
             <td>{{ user.nombre }}</td>
             <td>{{ user.apellido }}</td>
             <td>{{ user.celular }}</td>
-            <td>{{ user.image }} </td>
+            <td>
+              {% if user.image%}
+              <img
+                style="height: 100px; width: 100%; border-radius: 50px"
+                src="{{user.image}}"
+              />
+              {% else %}
+              <p class="text-center w-100">Sin imagen</p>
+              {% endif %}
+            </td>
             <td>{{ user.correo }}</td>
             <td>
-             
               <button
                 class="btn btn-warning"
                 data-bs-toggle="modal"
@@ -271,94 +279,93 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
 
     <script>
-const editUserModal = document.getElementById("editUserModal");
-const userData = {}; // Objeto para guardar los datos del usuario
+      const editUserModal = document.getElementById("editUserModal");
+      const userData = {}; // Objeto para guardar los datos del usuario
 
-// Cuando el modal de edición se muestra
-editUserModal.addEventListener("show.bs.modal", function (event) {
-  const button = event.relatedTarget; // Botón que activó el modal
-  const userId = button.getAttribute("data-id");
-  const userName = button.getAttribute("data-nombre");
-  const userApellido = button.getAttribute("data-apellido"); // Atributo para el apellido
-  const userEmail = button.getAttribute("data-correo");
-  const userCelular = button.getAttribute("data-celular");
-  const userImage = button.getAttribute("data-image");
+      // Cuando el modal de edición se muestra
+      editUserModal.addEventListener("show.bs.modal", function (event) {
+        const button = event.relatedTarget; // Botón que activó el modal
+        const userId = button.getAttribute("data-id");
+        const userName = button.getAttribute("data-nombre");
+        const userApellido = button.getAttribute("data-apellido"); // Atributo para el apellido
+        const userEmail = button.getAttribute("data-correo");
+        const userCelular = button.getAttribute("data-celular");
+        const userImage = button.getAttribute("data-image");
 
-  // Asignar los valores a los campos del formulario en el modal
-  const modalBody = editUserModal.querySelector(".modal-body");
-  const editNombre = modalBody.querySelector("#editNombre");
-  const editApellido = modalBody.querySelector("#editApellido");
-  const editCorreo = modalBody.querySelector("#editCorreo");
-  const editCelular = modalBody.querySelector("#editCelular");
-  const editImage = modalBody.querySelector("#editImage");
+        // Asignar los valores a los campos del formulario en el modal
+        const modalBody = editUserModal.querySelector(".modal-body");
+        const editNombre = modalBody.querySelector("#editNombre");
+        const editApellido = modalBody.querySelector("#editApellido");
+        const editCorreo = modalBody.querySelector("#editCorreo");
+        const editCelular = modalBody.querySelector("#editCelular");
+        const editImage = modalBody.querySelector("#editImage");
 
-  editNombre.value = userName;
-  editApellido.value = userApellido; // Asignar correctamente el apellido
-  editCorreo.value = userEmail;
-  editCelular.value = userCelular;
+        editNombre.value = userName;
+        editApellido.value = userApellido; // Asignar correctamente el apellido
+        editCorreo.value = userEmail;
+        editCelular.value = userCelular;
 
-  // Guardar los datos iniciales
-  userData.id = Number(userId);
-  userData.nombre = userName;
-  userData.apellido = userApellido; // Guardar apellido
-  userData.correo = userEmail;
-  userData.celular = userCelular;
+        // Guardar los datos iniciales
+        userData.id = Number(userId);
+        userData.nombre = userName;
+        userData.apellido = userApellido; // Guardar apellido
+        userData.correo = userEmail;
+        userData.celular = userCelular;
 
-  // Trackear los cambios en los inputs
-  editNombre.addEventListener("input", () => {
-    userData.nombre = editNombre.value;
-  });
-  editApellido.addEventListener("input", () => {
-    userData.apellido = editApellido.value; // Trackear cambios en apellido
-  });
-  editCorreo.addEventListener("input", () => {
-    userData.correo = editCorreo.value;
-  });
-  editCelular.addEventListener("input", () => {
-    userData.celular = editCelular.value;
-  });
+        // Trackear los cambios en los inputs
+        editNombre.addEventListener("input", () => {
+          userData.nombre = editNombre.value;
+        });
+        editApellido.addEventListener("input", () => {
+          userData.apellido = editApellido.value; // Trackear cambios en apellido
+        });
+        editCorreo.addEventListener("input", () => {
+          userData.correo = editCorreo.value;
+        });
+        editCelular.addEventListener("input", () => {
+          userData.celular = editCelular.value;
+        });
 
-  // Procesar la imagen
-  editImage.addEventListener("change", function () {
-    const imageFile = editImage.files[0];
-    if (imageFile) {
-      const reader = new FileReader();
-      reader.onloadend = function () {
-        userData.image = reader.result; // Convertir imagen a Base64
-        userData.imageName = imageFile.name; // Guardar el nombre de la imagen
-      };
-      reader.readAsDataURL(imageFile); // Leer el archivo y convertirlo
-    } else {
-      userData.image = ""; // Si no hay archivo, enviar vacío
-      userData.imageName = "";
-    }
-  });
+        // Procesar la imagen
+        editImage.addEventListener("change", function () {
+          const imageFile = editImage.files[0];
+          if (imageFile) {
+            const reader = new FileReader();
+            reader.onloadend = function () {
+              userData.image = reader.result; // Convertir imagen a Base64
+              userData.imageName = imageFile.name; // Guardar el nombre de la imagen
+            };
+            reader.readAsDataURL(imageFile); // Leer el archivo y convertirlo
+          } else {
+            userData.image = ""; // Si no hay archivo, enviar vacío
+            userData.imageName = "";
+          }
+        });
 
-  // Botón de actualización
-  const updateButton = modalBody.querySelector("#updatemodal");
-  updateButton.addEventListener("click", handleUpdateUser);
+        // Botón de actualización
+        const updateButton = modalBody.querySelector("#updatemodal");
+        updateButton.addEventListener("click", handleUpdateUser);
 
-  function handleUpdateUser(e) {
-    e.preventDefault();
-    fetch(`/update/${userData.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        alert("Usuario actualizado con éxito");
-        window.location.reload();
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("Hubo un error al actualizar el usuario");
+        function handleUpdateUser(e) {
+          e.preventDefault();
+          fetch(`/update/${userData.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(userData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert("Usuario actualizado con éxito");
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Hubo un error al actualizar el usuario");
+            });
+        }
       });
-  }
-});
-
 
       const deleteUserModal = document.getElementById("deleteUserModal");
       deleteUserModal.addEventListener("show.bs.modal", (e) => {
@@ -399,9 +406,9 @@ editUserModal.addEventListener("show.bs.modal", function (event) {
         if (imageFile) {
           const reader = new FileReader();
           reader.onloadend = function () {
-            imageBase64 = reader.result
+            imageBase64 = reader.result;
             imageName = imageFile.name; // Puedes usar el nombre del archivo o generarlo dinámicamente
-            console.log(reader.result)
+            console.log(reader.result);
             sendDataToServer();
           };
           reader.readAsDataURL(imageFile); // Convierte la imagen a Base64
