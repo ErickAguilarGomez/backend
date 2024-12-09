@@ -148,7 +148,7 @@ def delete_user(id):
             os.remove(user['image'])
         elif not user['image']:
             pass
-        else: ###
+        else: ###$$
             pass
         cur.execute("DELETE FROM users WHERE id = %s", (id,))
         connection.commit()
